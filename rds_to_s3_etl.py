@@ -11,10 +11,12 @@ def extract_from_rds():
     # Airflow의 PostgresHook을 사용해 데이터베이스에 연결
     pg_hook = PostgresHook(postgres_conn_id='my_postgres_conn')
     conn = pg_hook.get_conn()
+    cursor = conn.cursor()
     query = "SELECT * FROM your_table LIMIT 10;"
     
     # 데이터베이스에서 쿼리 실행하여 데이터프레임으로 저장
     df = pd.read_sql(query, conn)
+    cursor.close()
     conn.close()
     
     # CSV 형식으로 변환하여 반환
