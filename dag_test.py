@@ -4,6 +4,7 @@ from airflow.hooks.postgres_hook import PostgresHook
 from datetime import datetime
 import pyarrow as pa
 import io
+import pandas as pd
 
 
 
