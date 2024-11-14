@@ -14,7 +14,7 @@ def extract_from_rds():
     conn = pg_hook.get_conn()
     cursor = conn.cursor()
     query = "SELECT * FROM accounts_profile LIMIT 1;"
-    
+    print(query)
     # 데이터베이스에서 쿼리 실행하여 데이터프레임으로 저장
     df = pd.read_sql(query, conn)
     cursor.close()
