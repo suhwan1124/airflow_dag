@@ -2,7 +2,6 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from datetime import datetime
-import pyarrow 
 import pandas as pd
 import boto3
 import io
@@ -20,25 +19,25 @@ def extract_from_rds():
     cursor.close()
     conn.close()
     
-    # Parquet 형식으로 변환하여 반환
-    parquet_buffer = io.BytesIO()
-    df.to_parquet(parquet_buffer, index=False, engine='pyarrow')
-    parquet_buffer.seek(0)  # S3에 업로드하기 위해 버퍼의 시작 위치로 이동
-    return parquet_buffer.getvalue()
+    # CSV 형식으로 변환하여 반환
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False)  # CSV로 변환
+    csv_buffer.seek(0)  # S3에 업로드하기 위해 버퍼의 시작 위치로 이동
+    return csv_buffer.getvalue()
 
 # S3에 데이터 업로드 함수
-def load_to_s3(parquet_data):
+def load_to_s3(csv_data):
     s3 = boto3.client('s3')
     
     # 현재 날짜를 기준으로 디렉토리 형식의 Key 생성
     date_str = datetime.now().strftime("%Y/%m/%d")
-    s3_key = f"data/{date_str}/your_data.parquet"
+    s3_key = f"data/{date_str}/your_data.csv"
     
     try:
         s3.put_object(
             Bucket="suhwan-datalake-s3",
             Key=s3_key,
-            Body=parquet_data
+            Body=csv_data
         )
         print(f"Upload successful: {s3_key}")
     except Exception as e:
@@ -67,5 +66,3 @@ with DAG(
 
     # 태스크 순서 설정
     extract_task >> load_task
-
-
