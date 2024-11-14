@@ -2,6 +2,10 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from datetime import datetime
+import pyarrow as pa
+import io
+
+
 
 # RDS 연결 테스트 함수
 def test_rds_connection():
@@ -14,6 +18,17 @@ def test_rds_connection():
         cursor.execute("SELECT 1;")
         result = cursor.fetchone()
         print(f"RDS 연결 테스트 결과: {result}")
+        # 샘플 데이터프레임 생성
+        df = pd.DataFrame({
+            'column1': [1, 2, 3],
+            'column2': ['a', 'b', 'c']
+        })
+
+        # Parquet 형식으로 변환 테스트
+        buffer = io.BytesIO()
+        df.to_parquet(buffer, index=False, engine='pyarrow')
+        print("Parquet 변환 성공")
+        
         cursor.close()
         conn.close()
     except Exception as e:
